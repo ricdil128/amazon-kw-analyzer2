@@ -190,20 +190,10 @@ function AnalysisResults({ data, knowledgeBase, parameters }: AnalysisResultsPro
               <p className="text-sm font-medium text-slate-600">Ricavi Medi/Mese</p>
               <p className="text-2xl font-bold text-slate-900">
                 ${(() => {
-                  const validBooks = books.filter(b => b.price > 0);
+                  const validBooks = books.filter(b => b.salesRevenue !== undefined && b.salesRevenue !== null);
                   if (validBooks.length === 0) return 'N/A';
                   const avgRevenue = validBooks.reduce((acc, book) => {
-                    const kdp = calculateKDPMetrics(book.price, book.bsr || 999999, book.pages || 200);
-                    // Usa SOLO le vendite stimate dal CSV
-                    let monthlySales = 0;
-                    if (book.estSales) {
-                      const parsedSales = typeof book.estSales === 'string' 
-                        ? parseFloat(book.estSales.replace(/[^\d.-]/g, '')) 
-                        : book.estSales;
-                      monthlySales = parsedSales > 0 ? parsedSales : 0;
-                    }
-                    const monthlyRevenue = kdp.royalty * monthlySales;
-                    return acc + monthlyRevenue;
+                    return acc + (book.salesRevenue || 0);
                   }, 0) / validBooks.length;
                   return Math.round(avgRevenue);
                 })()}
