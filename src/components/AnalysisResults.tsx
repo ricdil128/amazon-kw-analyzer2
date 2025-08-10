@@ -189,13 +189,18 @@ function AnalysisResults({ data, knowledgeBase, parameters }: AnalysisResultsPro
             <div>
               <p className="text-sm font-medium text-slate-600">Ricavi Medi/Mese</p>
               <p className="text-2xl font-bold text-slate-900">
-                ${(() => {
-                  const validBooks = books.filter(b => b.salesRevenue !== undefined && b.salesRevenue !== null);
-                  if (validBooks.length === 0) return 'N/A';
-                  const avgRevenue = validBooks.reduce((acc, book) => {
-                    return acc + (book.salesRevenue || 0);
-                  }, 0) / validBooks.length;
-                  return Math.round(avgRevenue);
+                €{(() => {
+                  // Usa direttamente la colonna Sales Rev. dal CSV
+                  const revenueValues = books
+                    .map(b => b.salesRevenue)
+                    .filter(rev => rev !== undefined && rev !== null && !isNaN(rev));
+                  
+                  if (revenueValues.length === 0) return 'N/A';
+                  
+                  const total = revenueValues.reduce((acc, rev) => acc + rev, 0);
+                  const average = total / revenueValues.length;
+                  
+                  return Math.round(average);
                 })()}
               </p>
             </div>
