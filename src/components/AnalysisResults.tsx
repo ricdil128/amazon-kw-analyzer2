@@ -194,7 +194,16 @@ function AnalysisResults({ data, knowledgeBase, parameters }: AnalysisResultsPro
                   if (validBooks.length === 0) return 'N/A';
                   const avgRevenue = validBooks.reduce((acc, book) => {
                     const kdp = calculateKDPMetrics(book.price, book.bsr || 999999, book.pages || 200);
-                    return acc + kdp.monthlyRevenue;
+                    // Usa le vendite stimate dal CSV se disponibili, altrimenti quelle calcolate
+                    let monthlySales = kdp.monthlySales;
+                    if (book.estSales) {
+                      const parsedSales = typeof book.estSales === 'string' 
+                        ? parseFloat(book.estSales.replace(/[^\d.-]/g, '')) 
+                        : book.estSales;
+                      if (parsedSales > 0) monthlySales = parsedSales;
+                    }
+                    const monthlyRevenue = kdp.royalty * monthlySales;
+                    return acc + monthlyRevenue;
                   }, 0) / validBooks.length;
                   return Math.round(avgRevenue);
                 })()}
