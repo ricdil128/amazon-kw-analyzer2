@@ -538,29 +538,60 @@ function UploadSection({ onAnalysisComplete, knowledgeBase, parameters }: Upload
       const realAvgPrice = avgPriceValid.reduce((acc, b) => acc + b.price, 0) / avgPriceValid.length;
       
       if (realAvgPrice > 25) {
-        insights += `💎 MERCATO PREMIUM (prezzo medio €${realAvgPrice.toFixed(2)}):\n`;
-        insights += `• Pubblico disposto a investire in qualità\n`;
-        insights += `• Punta su contenuto approfondito e professionale\n`;
-        insights += `• Considera formato hardcover o bundle\n`;
-        insights += `• Marketing verso professionisti/esperti\n\n`;
+        if (profitablePercentage > 30) {
+          insights += `💎 MERCATO PREMIUM (prezzo medio €${realAvgPrice.toFixed(2)}):\n`;
+          insights += `• Pubblico disposto a investire in qualità\n`;
+          insights += `• Punta su contenuto approfondito e professionale\n`;
+          insights += `• Considera formato hardcover o bundle\n`;
+          insights += `• Marketing verso professionisti/esperti\n\n`;
+        } else {
+          insights += `⚠️ PREZZI ALTI MA NESSUNO VENDE (prezzo medio €${realAvgPrice.toFixed(2)}):\n`;
+          insights += `• Prezzi alti ma BSR pessimi = nessuna domanda reale\n`;
+          insights += `• Il pubblico NON è disposto a pagare questi prezzi\n`;
+          insights += `• Mercato inesistente o saturato da competitor migliori\n`;
+          insights += `• SCONSIGLIATO: cerca nicchie con domanda verificata\n\n`;
+        }
       } else if (realAvgPrice > 15) {
-        insights += `💰 FASCIA MEDIA-ALTA (prezzo medio €${realAvgPrice.toFixed(2)}):\n`;
-        insights += `• Sweet spot per la maggior parte delle nicchie\n`;
-        insights += `• Equilibrio tra accessibilità e profittabilità\n`;
-        insights += `• Punta su valore percepito alto\n`;
-        insights += `• Possibile upselling con bonus/risorse\n\n`;
+        if (profitablePercentage > 20) {
+          insights += `💰 FASCIA MEDIA-ALTA (prezzo medio €${realAvgPrice.toFixed(2)}):\n`;
+          insights += `• Sweet spot per la maggior parte delle nicchie\n`;
+          insights += `• Equilibrio tra accessibilità e profittabilità\n`;
+          insights += `• Punta su valore percepito alto\n`;
+          insights += `• Possibile upselling con bonus/risorse\n\n`;
+        } else {
+          insights += `⚠️ FASCIA MEDIA MA NESSUNO VENDE (prezzo medio €${realAvgPrice.toFixed(2)}):\n`;
+          insights += `• Prezzi ragionevoli ma performance pessime\n`;
+          insights += `• Problema di domanda, non di prezzo\n`;
+          insights += `• Mercato morto o dominato da pochi player\n`;
+          insights += `• Cerca nicchie con più movimento\n\n`;
+        }
       } else if (realAvgPrice > 8) {
-        insights += `💵 FASCIA MEDIA (prezzo medio €${realAvgPrice.toFixed(2)}):\n`;
-        insights += `• Mercato di massa, serve volume alto\n`;
-        insights += `• Ottimizza per conversioni e recensioni\n`;
-        insights += `• Considera serie di libri correlati\n`;
-        insights += `• Focus su marketing organico\n\n`;
+        if (profitablePercentage > 15) {
+          insights += `💵 FASCIA MEDIA (prezzo medio €${realAvgPrice.toFixed(2)}):\n`;
+          insights += `• Mercato di massa, serve volume alto\n`;
+          insights += `• Ottimizza per conversioni e recensioni\n`;
+          insights += `• Considera serie di libri correlati\n`;
+          insights += `• Focus su marketing organico\n\n`;
+        } else {
+          insights += `💸 FASCIA MEDIA MA MERCATO MORTO (prezzo medio €${realAvgPrice.toFixed(2)}):\n`;
+          insights += `• Anche con prezzi accessibili nessuno vende\n`;
+          insights += `• Zero domanda per questa keyword\n`;
+          insights += `• Non è un problema di prezzo ma di mercato\n`;
+          insights += `• EVITA questa nicchia completamente\n\n`;
+        }
       } else {
         insights += `⚠️ FASCIA BASSA (prezzo medio €${realAvgPrice.toFixed(2)}):\n`;
-        insights += `• Gara al ribasso - difficile profittabilità\n`;
-        insights += `• Necessari volumi enormi per guadagni decenti\n`;
-        insights += `• Considera nicchia più premium\n`;
-        insights += `• Valuta formati alternativi (audiolibro, corso)\n\n`;
+        if (profitablePercentage > 10) {
+          insights += `• Gara al ribasso - difficile profittabilità\n`;
+          insights += `• Necessari volumi enormi per guadagni decenti\n`;
+          insights += `• Considera nicchia più premium\n`;
+          insights += `• Valuta formati alternativi (audiolibro, corso)\n\n`;
+        } else {
+          insights += `• Prezzi bassi E nessuno vende = mercato completamente morto\n`;
+          insights += `• Neanche con prezzi stracciati c'è domanda\n`;
+          insights += `• Keyword da evitare assolutamente\n`;
+          insights += `• Cerca mercati con almeno qualche segnale di vita\n\n`;
+        }
       }
     }
     
