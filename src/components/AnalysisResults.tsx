@@ -189,20 +189,41 @@ function AnalysisResults({ data, knowledgeBase, parameters }: AnalysisResultsPro
             <div>
               <p className="text-sm font-medium text-slate-600">Ricavi Medi/Mese</p>
               <p className="text-2xl font-bold text-slate-900">
-                €{(() => {
-                  const validBooks = books.filter(b => 
-                    b.salesRevenue !== undefined && 
-                    b.salesRevenue !== null && 
-                    !isNaN(b.salesRevenue) && 
-                    b.salesRevenue > 0
-                  );
+                {(() => {
+                  console.log('=== DEBUG RICAVI MEDI ===');
+                  console.log('Tutti i libri:', books.length);
+                  
+                  // Mostra tutti i valori salesRevenue per debug
+                  books.forEach((book, i) => {
+                    console.log(`Libro ${i}: salesRevenue =`, book.salesRevenue, typeof book.salesRevenue);
+                  });
+                  
+                  const validBooks = books.filter(b => {
+                    const isValid = b.salesRevenue !== undefined && 
+                                   b.salesRevenue !== null && 
+                                   !isNaN(parseFloat(b.salesRevenue)) && 
+                                   parseFloat(b.salesRevenue) >= 0;
+                    console.log(`Libro "${b.title?.substring(0, 20)}": salesRevenue=${b.salesRevenue}, valid=${isValid}`);
+                    return isValid;
+                  });
+                  
+                  console.log('Libri validi per ricavi:', validBooks.length);
                   
                   if (validBooks.length === 0) return 'N/A';
                   
-                  const total = validBooks.reduce((acc, book) => acc + book.salesRevenue, 0);
+                  const total = validBooks.reduce((acc, book) => {
+                    const value = parseFloat(book.salesRevenue);
+                    console.log(`Aggiungendo: ${value}`);
+                    return acc + value;
+                  }, 0);
+                  
                   const average = total / validBooks.length;
                   
-                  return Math.round(average);
+                  console.log('Totale:', total);
+                  console.log('Media:', average);
+                  console.log('=========================');
+                  
+                  return `€${Math.round(average)}`;
                 })()}
               </p>
             </div>

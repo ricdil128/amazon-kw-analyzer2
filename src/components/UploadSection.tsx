@@ -147,7 +147,7 @@ function UploadSection({ onAnalysisComplete, knowledgeBase, parameters }: Upload
         rating: getColumnIndex(['reviews', 'rating', 'valutazione', 'stelle']),
         reviews: getColumnIndex(['rev.', 'recensioni', 'review count']),
         estSales: getColumnIndex(['est. sales', 'estimated sales', 'stima vendite']),
-        salesRev: getColumnIndex(['sales rev.', 'sales rev', 'sales revenue', 'ricavi', 'incassi']),
+        salesRev: getColumnIndex(['sales rev.', 'sales rev', 'sales revenue', 'ricavi', 'incassi', 'revenue']),
         pages: getColumnIndex(['pages', 'pagine', 'length']),
         format: getColumnIndex(['format', 'formato']),
         published: getColumnIndex(['date of publication', 'publication date', 'published date', 'published', 'date published']),
