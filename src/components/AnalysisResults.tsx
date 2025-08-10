@@ -13,7 +13,6 @@ interface AnalysisResultsProps {
 function AnalysisResults({ data, knowledgeBase, parameters }: AnalysisResultsProps) {
   const [sortBy, setSortBy] = useState<'bsr' | 'price' | 'reviews' | 'potential'>('bsr');
   const [filterBy, setFilterBy] = useState<'all' | 'opportunities' | 'high-potential'>('all');
-  const [showDetailedExport, setShowDetailedExport] = useState(false);
 
   if (!data) {
     return (
@@ -31,142 +30,6 @@ function AnalysisResults({ data, knowledgeBase, parameters }: AnalysisResultsPro
 
   const books = data.books || [];
   const analysis = data.analysis || {};
-
-  // Funzione per esportare analisi dettagliata per condivisione
-  const exportDetailedAnalysis = () => {
-    const detailedData = {
-      metadata: {
-        keyword: data.keyword,
-        uploadDate: data.uploadDate,
-        fileName: data.fileName,
-        totalBooks: books.length,
-        analysisDate: new Date().toISOString(),
-        parameters: parameters
-      },
-      summary: {
-        averageBSR: analysis.averageBSR,
-        averagePrice: analysis.averagePrice,
-        opportunities: analysis.opportunities,
-        insights: analysis.insights
-      },
-      books: books.map(book => {
-        const kdp = calculateKDPMetrics(
-          book.price || 0,
-          book.bsr || 999999,
-          book.pages || 200,
-          book.format || 'Paperback'
-        );
-        
-        return {
-          title: book.title,
-          author: book.author,
-          bsr: book.bsr,
-          price: book.price,
-          rating: book.rating,
-          reviews: book.reviews,
-          pages: book.pages,
-          format: book.format,
-          published: book.published,
-          asin: book.asin,
-          bookUrl: book.bookUrl,
-          angle: book.angle,
-          kdpMetrics: kdp,
-          opportunity: isOpportunity(book),
-          competitiveness: getCompetitiveness(book.bsr || 999999),
-          priceCategory: getPriceCategory(book.price || 0),
-          reviewsCategory: getReviewsCategory(book.reviews || 0)
-        };
-      }),
-      knowledgeBase: {
-        documentsCount: knowledgeBase.length,
-        totalSize: knowledgeBase.reduce((acc, doc) => acc + doc.size, 0),
-        documents: knowledgeBase.map(doc => ({
-          name: doc.name,
-          size: doc.size,
-          uploadDate: doc.uploadDate
-        }))
-      }
-    };
-
-    const jsonString = JSON.stringify(detailedData, null, 2);
-    const blob = new Blob([jsonString], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `analisi-dettagliata-${new Date().toISOString().split('T')[0]}.json`;
-    link.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const copyAnalysisToClipboard = async () => {
-    const summary = `
-ANALISI AMAZON KW: ${data.keyword}
-Data: ${new Date().toLocaleDateString('it-IT')}
-Libri analizzati: ${books.length}
-
-STATISTICHE:
-- BSR medio: ${analysis.averageBSR?.toLocaleString() || 'N/A'}
-- Prezzo medio: €${analysis.averagePrice?.toFixed(2) || 'N/A'}
-- Opportunità identificate: ${analysis.opportunities || 0}
-
-TOP 5 OPPORTUNITÀ:
-${getTopOpportunities().slice(0, 5).map((book, i) => 
-  `${i+1}. "${book.title.substring(0, 50)}..." - BSR: ${book.bsr?.toLocaleString()}, €${book.price}`
-).join('\n')}
-
-INSIGHTS:
-${analysis.insights || 'Nessun insight disponibile'}
-    `.trim();
-
-    try {
-      await navigator.clipboard.writeText(summary);
-      alert('Analisi copiata negli appunti!');
-    } catch (err) {
-      console.error('Errore nella copia:', err);
-      alert('Errore nella copia. Prova con il download JSON.');
-    }
-  };
-
-  const isOpportunity = (book: any): boolean => {
-    const bsr = book.bsr || 999999;
-    const price = book.price || 0;
-    const reviews = book.reviews || 0;
-    
-    return bsr >= parameters.opportunities.minBSR && 
-           bsr <= parameters.opportunities.maxBSR &&
-           price >= parameters.opportunities.minPrice &&
-           reviews <= parameters.opportunities.maxReviews;
-  };
-
-  const getCompetitiveness = (bsr: number): string => {
-    if (bsr < parameters.bsr.veryCompetitive) return 'Molto Alta';
-    if (bsr < parameters.bsr.competitive) return 'Alta';
-    if (bsr < parameters.bsr.moderate) return 'Media';
-    return 'Bassa';
-  };
-
-  const getPriceCategory = (price: number): string => {
-    if (price < parameters.price.low) return 'Bassa';
-    if (price < parameters.price.medium) return 'Media';
-    if (price >= parameters.price.high) return 'Alta';
-    return 'Media';
-  };
-
-  const getReviewsCategory = (reviews: number): string => {
-    if (reviews < parameters.reviews.few) return 'Poche';
-    if (reviews < parameters.reviews.moderate) return 'Moderate';
-    return 'Molte';
-  };
-
-  const getTopOpportunities = () => {
-    return books
-      .filter(isOpportunity)
-      .sort((a, b) => {
-        const aKdp = calculateKDPMetrics(a.price || 0, a.bsr || 999999, a.pages || 200);
-        const bKdp = calculateKDPMetrics(b.price || 0, b.bsr || 999999, b.pages || 200);
-        return bKdp.monthlyRevenue - aKdp.monthlyRevenue;
-      });
-  };
 
   const filteredBooks = books.filter(book => {
     if (filterBy === 'opportunities') return isOpportunity(book);
@@ -257,39 +120,6 @@ ${analysis.insights || 'Nessun insight disponibile'}
         </div>
       </div>
 
-      {/* Export Controls */}
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100">
-        <h3 className="text-lg font-semibold text-slate-900 mb-4">📤 Esporta e Condividi Analisi</h3>
-        <div className="flex flex-wrap gap-3">
-          <button
-            onClick={() => exportToCSV(books, `analisi-${data.keyword}-${new Date().toISOString().split('T')[0]}`)}
-            className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-          >
-            <Download className="w-4 h-4" />
-            <span>Esporta CSV</span>
-          </button>
-          
-          <button
-            onClick={exportDetailedAnalysis}
-            className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <FileText className="w-4 h-4" />
-            <span>Esporta Analisi Completa (JSON)</span>
-          </button>
-          
-          <button
-            onClick={copyAnalysisToClipboard}
-            className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-          >
-            <Copy className="w-4 h-4" />
-            <span>Copia Riassunto</span>
-          </button>
-        </div>
-        <p className="text-xs text-slate-500 mt-2">
-          💡 Usa "Esporta Analisi Completa" per condividere tutti i dati con esperti per analisi approfondite
-        </p>
-      </div>
-
       {/* Insights */}
       {analysis.insights && (
         <div className="bg-blue-50 rounded-xl p-6 border border-blue-100">
@@ -303,6 +133,14 @@ ${analysis.insights || 'Nessun insight disponibile'}
       {/* Controls */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div className="flex flex-wrap gap-3">
+          <button
+            onClick={() => exportToCSV(books, `analisi-${data.keyword}-${new Date().toISOString().split('T')[0]}`)}
+            className="flex items-center space-x-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+          >
+            <Download className="w-4 h-4" />
+            <span>Esporta CSV</span>
+          </button>
+
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as any)}
