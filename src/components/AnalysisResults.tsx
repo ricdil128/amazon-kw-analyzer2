@@ -92,7 +92,7 @@ function AnalysisResults({ data, knowledgeBase, parameters }: AnalysisResultsPro
       </div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100">
           <div className="flex items-center justify-between">
             <div>
@@ -120,7 +120,7 @@ function AnalysisResults({ data, knowledgeBase, parameters }: AnalysisResultsPro
             <div>
               <p className="text-sm font-medium text-slate-600">Prezzo Medio</p>
               <p className="text-2xl font-bold text-slate-900">
-                €{analysis.averagePrice?.toFixed(2) || 'N/A'}
+                ${analysis.averagePrice?.toFixed(2) || 'N/A'}
               </p>
             </div>
             <DollarSign className="w-8 h-8 text-emerald-500" />
@@ -130,10 +130,272 @@ function AnalysisResults({ data, knowledgeBase, parameters }: AnalysisResultsPro
         <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-slate-600">Opportunità</p>
-              <p className="text-2xl font-bold text-slate-900">{getTopOpportunities().length}</p>
+              <p className="text-sm font-medium text-slate-600">Royalty Media</p>
+              <p className="text-2xl font-bold text-slate-900">
+                ${(() => {
+                  const validBooks = books.filter(b => b.price > 0 && b.pages);
+                  if (validBooks.length === 0) return 'N/A';
+                  const avgRoyalty = validBooks.reduce((acc, book) => {
+                    const kdp = calculateKDPMetrics(book.price, book.bsr || 999999, book.pages || 200);
+                    return acc + kdp.royalty;
+                  }, 0) / validBooks.length;
+                  return avgRoyalty.toFixed(2);
+                })()}
+              </p>
             </div>
-            <Target className="w-8 h-8 text-yellow-500" />
+            <DollarSign className="w-8 h-8 text-purple-500" />
+          </div>
+        </div>
+      </div>
+
+      {/* Second Row of Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-slate-600">Pagine Medie</p>
+              <p className="text-2xl font-bold text-slate-900">
+                {(() => {
+                  const validBooks = books.filter(b => b.pages && b.pages > 0);
+                  if (validBooks.length === 0) return 'N/A';
+                  const avgPages = Math.round(validBooks.reduce((acc, b) => acc + b.pages, 0) / validBooks.length);
+                  return avgPages;
+                })()}
+              </p>
+            </div>
+            <FileText className="w-8 h-8 text-blue-500" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-slate-600">Rating Medio</p>
+              <p className="text-2xl font-bold text-slate-900">
+                {(() => {
+                  const validBooks = books.filter(b => b.rating && b.rating > 0);
+                  if (validBooks.length === 0) return 'N/A';
+                  const avgRating = (validBooks.reduce((acc, b) => acc + b.rating, 0) / validBooks.length).toFixed(1);
+                  return avgRating;
+                })()}
+              </p>
+            </div>
+            <Star className="w-8 h-8 text-yellow-500" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-slate-600">Ricavi Medi/Mese</p>
+              <p className="text-2xl font-bold text-slate-900">
+                ${(() => {
+                  const validBooks = books.filter(b => b.price > 0);
+                  if (validBooks.length === 0) return 'N/A';
+                  const avgRevenue = validBooks.reduce((acc, book) => {
+                    const kdp = calculateKDPMetrics(book.price, book.bsr || 999999, book.pages || 200);
+                    return acc + kdp.monthlyRevenue;
+                  }, 0) / validBooks.length;
+                  return Math.round(avgRevenue);
+                })()}
+              </p>
+            </div>
+            <TrendingUp className="w-8 h-8 text-green-500" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-slate-600">% Potenziale Alto</p>
+              <p className="text-2xl font-bold text-slate-900">
+                {(() => {
+                  if (books.length === 0) return '0%';
+                  const highPotentialBooks = books.filter(book => {
+                    const kdp = calculateKDPMetrics(book.price || 0, book.bsr || 999999, book.pages || 200);
+                    return kdp.monthlyRevenue > 500;
+                  });
+                  const percentage = Math.round((highPotentialBooks.length / books.length) * 100);
+                  return `${percentage}%`;
+                })()}
+              </p>
+            </div>
+            <Target className="w-8 h-8 text-orange-500" />
+          </div>
+        </div>
+      </div>
+
+      {/* Score Nicchia */}
+      <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100 mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-slate-900">Score Nicchia</h3>
+          <div className="flex items-center space-x-2">
+            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+              <span className="text-lg font-bold text-blue-600">
+                {(() => {
+                  if (books.length === 0) return '0';
+                  
+                  let score = 0;
+                  const totalBooks = books.length;
+                  
+                  // BSR Score (30 punti max)
+                  const goodBSR = books.filter(b => (b.bsr || 999999) < 100000).length;
+                  score += Math.round((goodBSR / totalBooks) * 30);
+                  
+                  // Price Score (25 punti max)
+                  const goodPrice = books.filter(b => (b.price || 0) > 15).length;
+                  score += Math.round((goodPrice / totalBooks) * 25);
+                  
+                  // Reviews Score (25 punti max) - meno recensioni = meglio
+                  const lowReviews = books.filter(b => (b.reviews || 0) < 100).length;
+                  score += Math.round((lowReviews / totalBooks) * 25);
+                  
+                  // Revenue Score (20 punti max)
+                  const goodRevenue = books.filter(book => {
+                    const kdp = calculateKDPMetrics(book.price || 0, book.bsr || 999999, book.pages || 200);
+                    return kdp.monthlyRevenue > 200;
+                  }).length;
+                  score += Math.round((goodRevenue / totalBooks) * 20);
+                  
+                  return Math.min(score, 100);
+                })()}
+              </span>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-3xl font-bold text-slate-900">
+              {(() => {
+                if (books.length === 0) return '0/100';
+                
+                let score = 0;
+                const totalBooks = books.length;
+                
+                const goodBSR = books.filter(b => (b.bsr || 999999) < 100000).length;
+                score += Math.round((goodBSR / totalBooks) * 30);
+                
+                const goodPrice = books.filter(b => (b.price || 0) > 15).length;
+                score += Math.round((goodPrice / totalBooks) * 25);
+                
+                const lowReviews = books.filter(b => (b.reviews || 0) < 100).length;
+                score += Math.round((lowReviews / totalBooks) * 25);
+                
+                const goodRevenue = books.filter(book => {
+                  const kdp = calculateKDPMetrics(book.price || 0, book.bsr || 999999, book.pages || 200);
+                  return kdp.monthlyRevenue > 200;
+                }).length;
+                score += Math.round((goodRevenue / totalBooks) * 20);
+                
+                const finalScore = Math.min(score, 100);
+                return `${finalScore}/100`;
+              })()}
+            </p>
+            <div className="flex items-center space-x-2 mt-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span className="text-sm text-slate-600">
+                {(() => {
+                  if (books.length === 0) return 'Nessun dato';
+                  
+                  let score = 0;
+                  const totalBooks = books.length;
+                  
+                  const goodBSR = books.filter(b => (b.bsr || 999999) < 100000).length;
+                  score += Math.round((goodBSR / totalBooks) * 30);
+                  
+                  const goodPrice = books.filter(b => (b.price || 0) > 15).length;
+                  score += Math.round((goodPrice / totalBooks) * 25);
+                  
+                  const lowReviews = books.filter(b => (b.reviews || 0) < 100).length;
+                  score += Math.round((lowReviews / totalBooks) * 25);
+                  
+                  const goodRevenue = books.filter(book => {
+                    const kdp = calculateKDPMetrics(book.price || 0, book.bsr || 999999, book.pages || 200);
+                    return kdp.monthlyRevenue > 200;
+                  }).length;
+                  score += Math.round((goodRevenue / totalBooks) * 20);
+                  
+                  const finalScore = Math.min(score, 100);
+                  
+                  if (finalScore >= 80) return 'Ottima Nicchia';
+                  if (finalScore >= 60) return 'Buona Nicchia';
+                  if (finalScore >= 40) return 'Nicchia Moderata';
+                  return 'Nicchia Difficile';
+                })()}
+              </span>
+            </div>
+            <p className="text-sm text-slate-500 mt-1">
+              Libri validi analizzati: {books.filter(b => b.title && (b.bsr || b.price)).length}/{books.length}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Analisi Opportunità */}
+      <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100 mb-8">
+        <div className="flex items-center space-x-2 mb-6">
+          <Target className="w-6 h-6 text-purple-600" />
+          <h3 className="text-xl font-semibold text-slate-900">Analisi Opportunità</h3>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {/* Opportunità Reali */}
+          <div className="text-center">
+            <div className="text-4xl font-bold text-green-600 mb-2">
+              {(() => {
+                return books.filter(book => {
+                  const bsr = book.bsr || 999999;
+                  const price = book.price || 0;
+                  return bsr < 60000 && price > 18;
+                }).length;
+              })()}
+            </div>
+            <h4 className="font-semibold text-slate-900 mb-1">Opportunità Reali</h4>
+            <p className="text-xs text-slate-600">BSR sotto 60.000, Prezzo sopra $18</p>
+          </div>
+
+          {/* Opportunità Premium */}
+          <div className="text-center">
+            <div className="text-4xl font-bold text-blue-600 mb-2">
+              {(() => {
+                return books.filter(book => {
+                  const bsr = book.bsr || 999999;
+                  const price = book.price || 0;
+                  const kdp = calculateKDPMetrics(price, bsr, book.pages || 200);
+                  return bsr < 60000 && price > 18 && kdp.royalty >= 8;
+                }).length;
+              })()}
+            </div>
+            <h4 className="font-semibold text-slate-900 mb-1">Opportunità Premium</h4>
+            <p className="text-xs text-slate-600">BSR sotto 60.000, Prezzo sopra $18, Royalty minimo $8</p>
+          </div>
+
+          {/* Alta Profittabilità */}
+          <div className="text-center">
+            <div className="text-4xl font-bold text-indigo-600 mb-2">
+              {(() => {
+                return books.filter(book => {
+                  const bsr = book.bsr || 999999;
+                  return bsr < 30000;
+                }).length;
+              })()}
+            </div>
+            <h4 className="font-semibold text-slate-900 mb-1">Alta Profittabilità</h4>
+            <p className="text-xs text-slate-600">BSR sotto 30.000</p>
+          </div>
+
+          {/* Fascia Premium */}
+          <div className="text-center">
+            <div className="text-4xl font-bold text-purple-600 mb-2">
+              {(() => {
+                return books.filter(book => {
+                  const price = book.price || 0;
+                  return price > 25;
+                }).length;
+              })()}
+            </div>
+            <h4 className="font-semibold text-slate-900 mb-1">Fascia Premium</h4>
+            <p className="text-xs text-slate-600">Prezzo sopra $25</p>
           </div>
         </div>
       </div>
