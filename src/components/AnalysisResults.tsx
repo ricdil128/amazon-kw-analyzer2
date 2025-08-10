@@ -14,6 +14,24 @@ function AnalysisResults({ data, knowledgeBase, parameters }: AnalysisResultsPro
   const [sortBy, setSortBy] = useState<'bsr' | 'price' | 'reviews' | 'potential'>('bsr');
   const [filterBy, setFilterBy] = useState<'all' | 'opportunities' | 'high-potential'>('all');
 
+  // Helper function to determine if a book is an opportunity
+  const isOpportunity = (book: any) => {
+    const bsr = book.bsr || 999999;
+    const reviews = book.reviews || 0;
+    const price = book.price || 0;
+    
+    return (
+      bsr < parameters.bsr.moderate &&
+      reviews < parameters.reviews.moderate &&
+      price >= parameters.price.minimum
+    );
+  };
+
+  // Helper function to get top opportunities
+  const getTopOpportunities = () => {
+    return books.filter(isOpportunity);
+  };
+
   if (!data) {
     return (
       <div className="text-center py-12">
