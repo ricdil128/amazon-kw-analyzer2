@@ -506,24 +506,30 @@ function UploadSection({ onAnalysisComplete, knowledgeBase, parameters }: Upload
     
     // Analisi profittabilità
     const profitablePercentage = ((veryProfitable + goodSales) / books.length) * 100;
-    if (profitablePercentage > 70) {
+    if (profitablePercentage > 60) {
       insights += `🔥 MERCATO MOLTO PROFITTEVOLE (${Math.round(profitablePercentage)}% libri vendono bene):\n`;
       insights += `• Mercato saturo ma con alta domanda - serve eccellenza\n`;
       insights += `• Molti libri hanno successo ma la concorrenza è feroce\n`;
       insights += `• Necessario contenuto superiore e marketing aggressivo\n`;
       insights += `• Considera sottocategorie meno competitive\n\n`;
-    } else if (profitablePercentage > 40) {
+    } else if (profitablePercentage > 30) {
       insights += `✅ MERCATO EQUILIBRATO (${Math.round(profitablePercentage)}% libri vendono bene):\n`;
       insights += `• SWEET SPOT: C'è domanda ma non troppa saturazione\n`;
       insights += `• Buone opportunità con contenuto di qualità\n`;
       insights += `• Analizza gap negli angoli di attacco dei bestseller\n`;
       insights += `• Prezzo competitivo ma non necessariamente il più basso\n\n`;
+    } else if (profitablePercentage > 10) {
+      insights += `⚠️ MERCATO DIFFICILE (${Math.round(profitablePercentage)}% libri vendono bene):\n`;
+      insights += `• Pochi libri hanno successo - mercato molto selettivo\n`;
+      insights += `• Domanda limitata o nicchia molto specifica\n`;
+      insights += `• Necessario contenuto eccezionale per emergere\n`;
+      insights += `• Considera se vale la pena investire tempo/risorse\n\n`;
     } else {
-      insights += `🎯 MERCATO DI NICCHIA (${Math.round(profitablePercentage)}% libri vendono bene):\n`;
-      insights += `• Poca saturazione = più facile emergere con qualità\n`;
-      insights += `• Domanda limitata ma fedele - pubblico specifico\n`;
-      insights += `• Opportunità per diventare leader di categoria\n`;
-      insights += `• Verifica che ci sia abbastanza volume di ricerca\n\n`;
+      insights += `🚫 MERCATO NON PROFITTEVOLE (${Math.round(profitablePercentage)}% libri vendono bene):\n`;
+      insights += `• BSR medio troppo alto (${Math.round(avgBSR).toLocaleString()}) = vendite scarse\n`;
+      insights += `• Praticamente nessun libro vende bene in questa nicchia\n`;
+      insights += `• SCONSIGLIATO: cerca keyword con più domanda\n`;
+      insights += `• Considera nicchie correlate ma più popolari\n\n`;
     }
     
     // Analisi prezzi e strategia
